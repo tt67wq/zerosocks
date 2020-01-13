@@ -14,17 +14,17 @@ defmodule Server.Listener do
 
   def loop_serve() do
     {sid, data} = Tunnel.decode_recv()
-    Logger.info("recv from tunnel: #{inspect(data)}")
+    Logger.debug("recv from tunnel: #{inspect(data)}")
 
     case data do
       <<0x05::8, 0x01::8, 0x00::8>> ->
         # handshake
-        Logger.info("handshaking")
+        Logger.debug("handshaking")
         Tunnel.encode_send(sid, <<0x05, 0x00>>)
 
       <<0x05::8, 0x01::8, 0x00::8, 0x01::8, _addr::binary>> ->
         # ip connection
-        Logger.info("connecting by ip")
+        Logger.debug("connecting by ip")
 
         with {ipaddr, port} <- parse_remote_addr(data),
              {:ok, rsock} <- Socket.TCP.connect(ipaddr, port) do
@@ -38,7 +38,7 @@ defmodule Server.Listener do
 
       <<0x05::8, 0x01::8, 0x00::8, 0x03::8, _addr::binary>> ->
         # host connection
-        Logger.info("connecting by host")
+        Logger.debug("connecting by host")
 
         with {ipaddr, port} <- parse_remote_addr(data),
              {:ok, rsock} <- Socket.TCP.connect(ipaddr, port) do
@@ -73,7 +73,7 @@ defmodule Server.Listener do
     host_size = 8 * len
 
     hostname = binary_part(addr, 0, len)
-    Logger.info("hostname: #{hostname}")
+    Logger.debug("hostname: #{hostname}")
 
     
     {:ok, {:hostent, _, _, :inet, 4, [{ip1, ip2, ip3, ip4} | _]}} =
