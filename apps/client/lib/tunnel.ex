@@ -3,7 +3,7 @@ defmodule Client.Tunnel do
   链接通道
   """
   @remote 'localhost'
-  @port 5555
+  @port 8989
   @key "HelloWorld"
   @base_id "abc"
 

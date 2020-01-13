@@ -11,7 +11,7 @@ defmodule Client.Receiver do
   def run() do
     {sid, data} = Client.Tunnel.decode_recv()
 
-    Logger.info("recv from tunnel: #{inspect(data)}")
+    Logger.debug("recv from tunnel: #{inspect(data)}")
 
     case Client.SockStore.lookup(sid) do
       nil ->

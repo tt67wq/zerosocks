@@ -30,12 +30,12 @@ defmodule Client.Listener do
   defp serve_local(sid, client) do
     case Socket.Stream.recv(client) do
       {:ok, data} when data != nil ->
-        Logger.info("recv from local: #{inspect(data)}")
+        Logger.debug("recv from local: #{inspect(data)}")
         Tunnel.encode_send(sid, data)
         serve_local(sid, client)
 
       _ ->
-        Logger.warn("client socket exit")
+        Logger.debug("client socket exit")
         Socket.Stream.close(client)
         Client.SockStore.unregister(sid)
     end
