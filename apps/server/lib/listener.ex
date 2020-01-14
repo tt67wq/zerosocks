@@ -76,6 +76,7 @@ defmodule Server.Listener do
         serve_remote(sid, rsock)
 
       _ ->
+	Logger.warn("remote sock closed")
         Server.SockStore.unregister(sid)
         Socket.Stream.close(rsock)
     end
