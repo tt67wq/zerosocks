@@ -18,12 +18,7 @@ defmodule Client.Listener do
     {:ok, client} = Socket.TCP.accept(listener)
     sid = gen_socket_id()
     Client.SockStore.register(sid, client)
-
-    {:ok, pid} =
-      Task.Supervisor.start_child(Client.TaskSupervisor, fn -> serve_local(sid, client) end)
-
-    :ok = :gen_tcp.controlling_process(client, pid)
-
+    Task.Supervisor.start_child(Client.TaskSupervisor, fn -> serve_local(sid, client) end)
     loop_accept(listener)
   end
 
