@@ -42,7 +42,7 @@ defmodule Server.Listener do
 
   defp connect_remote(sid, data) do
     with {ipaddr, port} <- parse_remote_addr(data),
-         {:ok, rsock} <- Socket.TCP.connect(addr, port) do
+         {:ok, rsock} <- Socket.TCP.connect(ipaddr, port) do
       Server.SockStore.register(sid, rsock)
       Tunnel.encode_send(sid, @connect_succ)
       serve_remote(sid, rsock)
