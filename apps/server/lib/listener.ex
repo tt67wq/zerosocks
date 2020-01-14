@@ -42,25 +42,13 @@ defmodule Server.Listener do
 
   defp connect_remote(sid, data) do
     with {ipaddr, port} <- parse_remote_addr(data),
-         rsock <- get_remote_sock(ipaddr, port) do
+         {:ok, rsock} <- Socket.TCP.connect(addr, port) do
       Server.SockStore.register(sid, rsock)
       Tunnel.encode_send(sid, @connect_succ)
-      serve_remote(sid, rsock, {ipaddr, port})
+      serve_remote(sid, rsock)
     else
       _ ->
         Tunnel.encode_send(sid, @connect_fail)
-    end
-  end
-
-  defp get_remote_sock(addr, port) do
-    case Server.SockStore.cache_lookup({addr, port}) do
-      nil ->
-        {:ok, rsock} = Socket.TCP.connect(addr, port)
-        Server.SockStore.cache_put({addr, port}, rsock)
-        rsock
-
-      rsock ->
-        rsock
     end
   end
 
@@ -83,16 +71,15 @@ defmodule Server.Listener do
     {"#{ip1}.#{ip2}.#{ip3}.#{ip4}", port}
   end
 
-  defp serve_remote(sid, rsock, addr) do
+  defp serve_remote(sid, rsock) do
     case Socket.Stream.recv(rsock) do
       {:ok, data} when data != nil ->
         Tunnel.encode_send(sid, data)
-        serve_remote(sid, rsock, addr)
+        serve_remote(sid, rsock)
 
       _ ->
         Logger.warn("remote sock closed")
         Server.SockStore.unregister(sid)
-        Server.SockStore.cache_drop(addr)
         Socket.Stream.close(rsock)
     end
   end

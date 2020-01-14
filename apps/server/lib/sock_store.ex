@@ -18,18 +18,4 @@ defmodule Server.SockStore do
     end
   end
 
-  def cache_put({addr, port}, socket) do
-    Registry.register(__MODULE__, {addr, port}, socket)
-  end
-
-  def cache_drop({addr, port}) do
-    Registry.unregister(__MODULE__, {addr, port})
-  end
-
-  def cache_lookup({addr, port}) do
-    case Registry.lookup(__MODULE__, {addr, port}) do
-      [] -> nil
-      [{_, socket}] -> socket
-    end
-  end
 end
