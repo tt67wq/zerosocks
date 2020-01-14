@@ -15,7 +15,7 @@ defmodule Server.Listener do
   def loop_serve() do
     {sid, data} = Tunnel.decode_recv()
     Logger.debug("recv from tunnel: #{inspect(data)}")
-    Task.start(fn -> process(data, sid) end)
+    process(data, sid)
     loop_serve()
   end
 
@@ -76,7 +76,7 @@ defmodule Server.Listener do
         serve_remote(sid, rsock)
 
       _ ->
-	Logger.warn("remote sock closed")
+        Logger.warn("remote sock closed")
         Server.SockStore.unregister(sid)
         Socket.Stream.close(rsock)
     end
