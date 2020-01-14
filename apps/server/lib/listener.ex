@@ -15,53 +15,39 @@ defmodule Server.Listener do
   def loop_serve() do
     {sid, data} = Tunnel.decode_recv()
     Logger.debug("recv from tunnel: #{inspect(data)}")
-
-    case data do
-      <<0x05::8, 0x01::8, 0x00::8>> ->
-        # handshake
-        Logger.debug("handshaking")
-        Tunnel.encode_send(sid, <<0x05, 0x00>>)
-
-      <<0x05::8, 0x01::8, 0x00::8, 0x01::8, _addr::binary>> ->
-        # ip connection
-        Logger.debug("connecting by ip")
-
-        with {ipaddr, port} <- parse_remote_addr(data),
-             {:ok, rsock} <- Socket.TCP.connect(ipaddr, port) do
-          Server.SockStore.register(sid, rsock)
-          Tunnel.encode_send(sid, @connect_succ)
-          Task.start(fn -> serve_remote(sid, rsock) end)
-        else
-          _ ->
-            Tunnel.encode_send(sid, @connect_fail)
-        end
-
-      <<0x05::8, 0x01::8, 0x00::8, 0x03::8, _addr::binary>> ->
-        # host connection
-        Logger.debug("connecting by host")
-
-        with {ipaddr, port} <- parse_remote_addr(data),
-             {:ok, rsock} <- Socket.TCP.connect(ipaddr, port) do
-          Server.SockStore.register(sid, rsock)
-          Tunnel.encode_send(sid, @connect_succ)
-          Task.start(fn -> serve_remote(sid, rsock) end)
-        else
-          _ ->
-            Tunnel.encode_send(sid, @connect_fail)
-        end
-
-      _ ->
-        # request data
-        case Server.SockStore.lookup(sid) do
-          nil ->
-            Logger.warn("closed sock: #{inspect(sid)}")
-
-          rsock ->
-            Socket.Stream.send(rsock, data)
-        end
-    end
-
+    Task.start(fn -> process(data, sid) end)
     loop_serve()
+  end
+
+  # handshake
+  defp process(<<0x05::8, 0x01::8, 0x00::8>>, sid), do: Tunnel.encode_send(sid, <<0x05, 0x00>>)
+
+  defp process(<<0x05::8, 0x01::8, 0x00::8, 0x01::8, _addr::binary>> = data, sid),
+    do: connect_remote(sid, data)
+
+  defp process(<<0x05::8, 0x01::8, 0x00::8, 0x03::8, _addr::binary>> = data, sid),
+    do: connect_remote(sid, data)
+
+  defp process(data, sid) do
+    case Server.SockStore.lookup(sid) do
+      nil ->
+        Logger.warn("closed sock: #{inspect(sid)}")
+
+      rsock ->
+        Socket.Stream.send(rsock, data)
+    end
+  end
+
+  defp connect_remote(sid, data) do
+    with {ipaddr, port} <- parse_remote_addr(data),
+         {:ok, rsock} <- Socket.TCP.connect(ipaddr, port) do
+      Server.SockStore.register(sid, rsock)
+      Tunnel.encode_send(sid, @connect_succ)
+      Task.start(fn -> serve_remote(sid, rsock) end)
+    else
+      _ ->
+        Tunnel.encode_send(sid, @connect_fail)
+    end
   end
 
   # ip类型
@@ -75,7 +61,6 @@ defmodule Server.Listener do
     hostname = binary_part(addr, 0, len)
     Logger.debug("hostname: #{hostname}")
 
-    
     {:ok, {:hostent, _, _, :inet, 4, [{ip1, ip2, ip3, ip4} | _]}} =
       :inet.gethostbyname(to_charlist(hostname))
 
