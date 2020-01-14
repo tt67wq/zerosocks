@@ -7,7 +7,6 @@ defmodule Server do
       {Registry, keys: :unique, name: Server.SockStore},
       Server.Tunnel,
       {Task.Supervisor, name: Server.TaskSupervisor}
-      # {Task, fn -> Server.Listener.loop_serve() end}
     ]
 
     opts = [strategy: :one_for_one, name: Server.Supervisor]

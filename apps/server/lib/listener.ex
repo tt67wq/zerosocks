@@ -22,11 +22,13 @@ defmodule Server.Listener do
   # handshake
   defp process(<<0x05::8, 0x01::8, 0x00::8>>, sid), do: Tunnel.encode_send(sid, <<0x05, 0x00>>)
 
+  # connect by ip
   defp process(<<0x05::8, 0x01::8, 0x00::8, 0x01::8, _addr::binary>> = data, sid),
-    do: connect_remote(sid, data)
+    do: Task.start(fn -> connect_remote(sid, data) end)
 
+  # connect by hostname
   defp process(<<0x05::8, 0x01::8, 0x00::8, 0x03::8, _addr::binary>> = data, sid),
-    do: connect_remote(sid, data)
+    do: Task.start(fn -> connect_remote(sid, data) end)
 
   defp process(data, sid) do
     case Server.SockStore.lookup(sid) do
@@ -43,7 +45,8 @@ defmodule Server.Listener do
          {:ok, rsock} <- Socket.TCP.connect(ipaddr, port) do
       Server.SockStore.register(sid, rsock)
       Tunnel.encode_send(sid, @connect_succ)
-      Task.start(fn -> serve_remote(sid, rsock) end)
+      serve_remote(sid, rsock)
+      # Task.start(fn -> serve_remote(sid, rsock) end)
     else
       _ ->
         Tunnel.encode_send(sid, @connect_fail)
