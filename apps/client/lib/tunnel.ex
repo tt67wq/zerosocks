@@ -2,7 +2,7 @@ defmodule Client.Tunnel do
   @moduledoc """
   链接通道
   """
-  @remote '45.32.237.244'
+  @remote 'localhost'
   @port 8989
   @key "HelloWorld"
   @base_id "abc"
