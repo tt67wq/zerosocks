@@ -5,6 +5,6 @@ config :logger,
 
 config :logger, :info_log,
   format: "$date $time $metadata [$level] $message\n",
-  path: "/root/zerosocks.log",
+  path: "/var/log/zerosocks/zerosocks.log",
   metadata: [:line, :file],
   level: :debug
