@@ -27,7 +27,8 @@ defmodule Server.MixProject do
       # {:sibling_app_in_umbrella, in_umbrella: true}
       {:socket, "~> 0.3"},
       {:chumak, in_umbrella: true},
-      {:common, in_umbrella: true}
+      {:common, in_umbrella: true},
+      {:distillery, "~> 2.1.1"}
     ]
   end
 end
