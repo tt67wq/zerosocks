@@ -24,11 +24,11 @@ defmodule Server.Listener do
 
   # connect by ip
   defp process(<<0x05, 0x01, 0x00, 0x01, _addr::binary>> = data, sid),
-    do: Task.start(fn -> connect_remote(sid, data) end)
+    do: Task.Supervisor.start_child(Server.TaskSupervisor, fn -> connect_remote(sid, data) end)
 
   # connect by hostname
   defp process(<<0x05, 0x01, 0x00, 0x03, _addr::binary>> = data, sid),
-    do: Task.start(fn -> connect_remote(sid, data) end)
+    do: Task.Supervisor.start_child(Server.TaskSupervisor, fn -> connect_remote(sid, data) end)
 
   defp process(data, sid) do
     case Server.SockStore.lookup(sid) do
