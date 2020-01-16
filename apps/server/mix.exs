@@ -28,7 +28,6 @@ defmodule Server.MixProject do
       {:socket, "~> 0.3"},
       {:chumak, in_umbrella: true},
       {:common, in_umbrella: true},
-      {:snappy, in_umbrella: true},
       {:distillery, "~> 2.1.1"}
     ]
   end
