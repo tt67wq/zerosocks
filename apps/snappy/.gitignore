@@ -1,9 +1,0 @@
-Makefile
-ebin
-priv
-.eunit
-*.o
-*.lo
-*.la
-*~
-*.swp
