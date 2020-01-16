@@ -20,14 +20,14 @@ defmodule Server.Listener do
   end
 
   # handshake
-  defp process(<<0x05::8, 0x01::8, 0x00::8>>, sid), do: Tunnel.encode_send(sid, <<0x05, 0x00>>)
+  defp process(<<0x05, 0x01, 0x00>>, sid), do: Tunnel.encode_send(sid, <<0x05, 0x00>>)
 
   # connect by ip
-  defp process(<<0x05::8, 0x01::8, 0x00::8, 0x01::8, _addr::binary>> = data, sid),
+  defp process(<<0x05, 0x01, 0x00, 0x01, _addr::binary>> = data, sid),
     do: Task.start(fn -> connect_remote(sid, data) end)
 
   # connect by hostname
-  defp process(<<0x05::8, 0x01::8, 0x00::8, 0x03::8, _addr::binary>> = data, sid),
+  defp process(<<0x05, 0x01, 0x00, 0x03, _addr::binary>> = data, sid),
     do: Task.start(fn -> connect_remote(sid, data) end)
 
   defp process(data, sid) do
@@ -53,11 +53,11 @@ defmodule Server.Listener do
   end
 
   # ip类型
-  defp parse_remote_addr(<<_pre::24, 0x01::8, ip1::8, ip2::8, ip3::8, ip4::8, port::16>>),
+  defp parse_remote_addr(<<_pre::24, 0x01, ip1, ip2, ip3, ip4, port::16>>),
     do: {"#{ip1}.#{ip2}.#{ip3}.#{ip4}", port}
 
   # hostname类型
-  defp parse_remote_addr(<<_pre::24, 0x03::8, len::8, addr::binary>>) do
+  defp parse_remote_addr(<<_pre::24, 0x03, len, addr::binary>>) do
     host_size = 8 * len
 
     hostname = binary_part(addr, 0, len)

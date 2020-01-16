@@ -24,6 +24,11 @@ defmodule Client.Listener do
 
   defp serve_local(sid, client) do
     case Socket.Stream.recv(client) do
+      {:ok, <<0x05, 0x01, 0x00>>} ->
+        # 这里不做服务端握手认证，直接吐回来就行
+        Socket.Stream.send(client, <<0x05, 0x00>>)
+        serve_local(sid, client)
+
       {:ok, data} when data != nil ->
         Logger.debug("recv from local: #{inspect(data)}")
         Tunnel.encode_send(sid, data)
