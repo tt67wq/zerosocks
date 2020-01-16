@@ -24,8 +24,8 @@ defmodule Client.Tunnel do
   def decode_recv() do
     <<sid::size(16), data::binary>> =
       recv()
-      |> Common.Compressor.decompress()
       |> Common.Crypto.aes_decrypt(@key, base64: false)
+      |> Common.Compressor.decompress()
 
     {<<sid::size(16)>>, <<data::binary>>}
   end
