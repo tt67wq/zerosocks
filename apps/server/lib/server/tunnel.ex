@@ -25,7 +25,6 @@ defmodule Server.Tunnel do
     <<sid::size(16), data::binary>> =
       recv()
       |> Common.Crypto.aes_decrypt(@key, base64: false)
-      |> Common.Lzw.decompress()
 
     {<<sid::size(16)>>, <<data::binary>>}
   end
@@ -36,7 +35,6 @@ defmodule Server.Tunnel do
 
   def encode_send(sid, data) do
     (sid <> data)
-    |> Common.Lzw.compress()
     |> Common.Crypto.aes_encrypt(@key, base64: false)
     |> send2()
   end
