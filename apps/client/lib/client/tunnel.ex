@@ -25,7 +25,7 @@ defmodule Client.Tunnel do
     <<sid::size(16), data::binary>> =
       recv()
       |> Common.Crypto.aes_decrypt(@key, base64: false)
-      |> Common.Compressor.decompress()
+      # |> Common.Compressor.decompress()
 
     {<<sid::size(16)>>, <<data::binary>>}
   end
@@ -36,7 +36,7 @@ defmodule Client.Tunnel do
 
   def encode_send(sid, data) do
     (sid <> data)
-    |> Common.Compressor.compress()
+    # |> Common.Compressor.compress()
     |> Common.Crypto.aes_encrypt(@key, base64: false)
     |> send2()
   end
