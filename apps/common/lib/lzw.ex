@@ -4,22 +4,10 @@ defmodule Common.Lzw do
   """
   @min_code 256
 
-  require Logger
+  def compress(data), do: do_compress(data, %{}, <<>>, @min_code, [])
 
-  def compress(data) do
-    {:ok, compressed_data} =
-      data
-      |> do_compress(%{}, <<>>, @min_code, [])
-      |> Jason.encode()
-
-    Logger.debug("compress_ratio: #{byte_size(compressed_data) / byte_size(data)}")
-    compressed_data
-  end
-
-  def decompress(compressed_data) do
-    {:ok, [h | t]} = Jason.decode(compressed_data)
-    do_decompress(t, @min_code, <<h>>, %{}, <<h>>)
-  end
+  def decompress([]), do: ""
+  def decompress([h | t]), do: do_decompress(t, @min_code, <<h>>, %{}, <<h>>)
 
   defp do_compress("", dict, buffer, _code, acc),
     do: Enum.reverse([get_dict_idx(buffer, dict) | acc])
