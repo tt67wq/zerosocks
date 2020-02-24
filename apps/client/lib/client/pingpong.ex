@@ -3,7 +3,7 @@ defmodule Client.PingPong do
   doc
   """
 
-  @pingpong_id "ping"
+  @pingpong_id "pi"
   @delta 10_000
 
   use GenServer
