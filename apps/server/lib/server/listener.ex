@@ -19,6 +19,9 @@ defmodule Server.Listener do
     loop_serve()
   end
 
+  # pingpong
+  defp process("ping", sid), do: Tunnel.encode_send(sid, "pong")
+  
   # handshake
   defp process(<<0x05, 0x01, 0x00>>, sid), do: Tunnel.encode_send(sid, <<0x05, 0x00>>)
 

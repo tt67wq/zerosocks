@@ -8,6 +8,7 @@ defmodule Client do
       # {Task.Supervisor, name: SsLocal.TaskSupervisor},
       {Registry, keys: :unique, name: Client.SockStore},
       Client.Tunnel,
+      Client.PingPong,
       {Task, fn -> Client.Listener.listen() end},
       {Task.Supervisor, name: Client.TaskSupervisor}
     ]

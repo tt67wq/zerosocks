@@ -15,6 +15,8 @@ defmodule Client.Receiver do
     run()
   end
 
+  defp process_data(_sid, "pong"), do: Client.PingPong.pong()
+
   defp process_data(sid, data) do
     case Client.SockStore.lookup(sid) do
       nil ->
