@@ -16,17 +16,22 @@ defmodule Client.Tunnel do
   end
 
   def recv() do
-    socket = Client.SockStore.lookup(@base_id)
-    {:ok, [data]} = :chumak.recv_multipart(socket)
-    data
+    @base_id
+    |> Client.SockStore.lookup()
+    |> :chumak.recv_multipart()
+    |> (fn
+          {:ok, [data]} -> data
+          _ -> :error
+        end).()
   end
 
   def decode_recv() do
-    <<sid::size(16), data::binary>> =
-      recv()
-      |> Common.Crypto.aes_decrypt(@key, base64: false)
-
-    {<<sid::size(16)>>, <<data::binary>>}
+    recv()
+    |> Common.Crypto.aes_decrypt(@key, base64: false)
+    |> (fn
+          <<sid::size(16), data::binary>> -> {<<sid::size(16)>>, <<data::binary>>}
+          :error -> :error
+        end).()
   end
 
   def send2(data) do
@@ -34,7 +39,8 @@ defmodule Client.Tunnel do
   end
 
   def encode_send(sid, data) do
-    (sid <> data)
+    sid
+    |> Kernel.<>(data)
     |> Common.Crypto.aes_encrypt(@key, base64: false)
     |> send2()
   end
